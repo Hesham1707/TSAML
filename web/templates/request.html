@@ -1,0 +1,35 @@
+{{define "title"}}Request{{end}}
+
+{{define "body"}}
+<h1>Request</h1>
+
+{{ if .Response }}
+{{ if .Success }}
+<div class="alert alert-success" role="alert">
+    Successful request, transaction ID: {{ .TransactionId }}
+</div>
+{{ else }}
+<div class="alert alert-danger" role="alert">
+    Unable to submit the request, retry later.
+</div>
+{{ end }}
+{{ end }}
+
+<form class="form-inline" action="request.html" method="post">
+    <div class="form-group">
+        <label for="ClientName">Client Name</label>
+        <input type="text" class="form-control" id="ClientName" placeholder="name" name="ClientName">
+    </div><br>
+    <div class="form-group">
+        <label for="ClientID">Customer ID</label>
+        <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+    </div><br>
+    <div class="form-group">
+        <label for="ClientBalance">Customer Balance</label>
+        <input type="text" class="form-control" id="ClientBalance" placeholder="balance" name="ClientBalance">
+    </div><br>
+    <input type="hidden" name="submitted" value="true"><br>
+    <button type="submit" class="btn btn-default">Send the request</button>
+</form>
+
+{{end}}
