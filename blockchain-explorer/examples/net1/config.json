@@ -1,0 +1,9 @@
+{
+	"network-configs": {
+		"fixtures_default": {
+			"name": "fixtures_default",
+			"profile": "./connection-profile/fixtures_default.json"
+		}
+	},
+	"license": "Apache-2.0"
+}
