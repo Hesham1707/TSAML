@@ -34,6 +34,8 @@ services:
       - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/crypto/orderer/msp
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443  # operation RESTful API
+      - ORDERER_METRICS_PROVIDER=prometheus  # prometheus will pull metrics from orderer via /metrics RESTful API
       - ORDERER_GENERAL_TLS_ENABLED=true
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/crypto/orderer/tls/server.key
       - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/crypto/orderer/tls/server.crt
@@ -55,6 +57,8 @@ services:
     environment:
       - CORE_PEER_ID=peer0.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443  # operation RESTful API
+      - CORE_METRICS_PROVIDER=prometheus  # prometheus will pull metrics from orderer via /metrics RESTful API
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7051      
@@ -77,6 +81,8 @@ services:
     environment:
       - CORE_PEER_ID=peer1.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444  # operation RESTful API
+      - CORE_METRICS_PROVIDER=prometheus  # prometheus will pull metrics from orderer via /metrics RESTful API
       - CORE_PEER_ADDRESS=peer1.org1.example.com:8051
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051      

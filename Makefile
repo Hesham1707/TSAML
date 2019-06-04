@@ -27,10 +27,11 @@ run:
 	@echo "Start app ..."
 	@./tsaml
 
-	##### CLEAN
+##### CLEAN
 clean: env-down
 	@echo "Clean up ..."
 	@rm -rf /tmp/tsaml-* tsaml
 	@docker rm -f -v `docker ps -a --no-trunc | grep "tsaml" | cut -d ' ' -f 1` 2>/dev/null || true
 	@docker rmi `docker images --no-trunc | grep "tsaml" | cut -d ' ' -f 1` 2>/dev/null || true
 	@echo "Clean up done"
+

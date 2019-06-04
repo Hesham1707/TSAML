@@ -41,9 +41,7 @@ import (
 // processServerList updates balaner's internal state, create/remove SubConns
 // and regenerates picker using the received serverList.
 func (lb *lbBalancer) processServerList(l *lbpb.ServerList) {
-	if grpclog.V(2) {
-		grpclog.Infof("lbBalancer: processing server list: %+v", l)
-	}
+	grpclog.Infof("lbBalancer: processing server list: %+v", l)
 	lb.mu.Lock()
 	defer lb.mu.Unlock()
 
@@ -53,9 +51,7 @@ func (lb *lbBalancer) processServerList(l *lbpb.ServerList) {
 
 	// If the new server list == old server list, do nothing.
 	if reflect.DeepEqual(lb.fullServerList, l.Servers) {
-		if grpclog.V(2) {
-			grpclog.Infof("lbBalancer: new serverlist same as the previous one, ignoring")
-		}
+		grpclog.Infof("lbBalancer: new serverlist same as the previous one, ignoring")
 		return
 	}
 	lb.fullServerList = l.Servers
@@ -78,62 +74,36 @@ func (lb *lbBalancer) processServerList(l *lbpb.ServerList) {
 			Addr:     fmt.Sprintf("%s:%d", ipStr, s.Port),
 			Metadata: &md,
 		}
-		if grpclog.V(2) {
-			grpclog.Infof("lbBalancer: server list entry[%d]: ipStr:|%s|, port:|%d|, load balancer token:|%v|",
-				i, ipStr, s.Port, s.LoadBalanceToken)
-		}
+		grpclog.Infof("lbBalancer: server list entry[%d]: ipStr:|%s|, port:|%d|, load balancer token:|%v|",
+			i, ipStr, s.Port, s.LoadBalanceToken)
 		backendAddrs = append(backendAddrs, addr)
 	}
 
-	// Call refreshSubConns to create/remove SubConns.  If we are in fallback,
-	// this is also exiting fallback.
+	// Call refreshSubConns to create/remove SubConns.
 	lb.refreshSubConns(backendAddrs, true)
+	// Regenerate and update picker no matter if there's update on backends (if
+	// any SubConn will be newed/removed). Because since the full serverList was
+	// different, there might be updates in drops or pick weights(different
+	// number of duplicates). We need to update picker with the fulllist.
+	//
+	// Now with cache, even if SubConn was newed/removed, there might be no
+	// state changes.
+	lb.regeneratePicker()
+	lb.cc.UpdateBalancerState(lb.state, lb.picker)
 }
 
-// refreshSubConns creates/removes SubConns with backendAddrs, and refreshes
-// balancer state and picker.
-//
+// refreshSubConns creates/removes SubConns with backendAddrs. It returns a bool
+// indicating whether the backendAddrs are different from the cached
+// backendAddrs (whether any SubConn was newed/removed).
 // Caller must hold lb.mu.
-func (lb *lbBalancer) refreshSubConns(backendAddrs []resolver.Address, fromGRPCLBServer bool) {
-	defer func() {
-		// Regenerate and update picker after refreshing subconns because with
-		// cache, even if SubConn was newed/removed, there might be no state
-		// changes (the subconn will be kept in cache, not actually
-		// newed/removed).
-		lb.updateStateAndPicker(true, true)
-	}()
-
-	lb.inFallback = !fromGRPCLBServer
-
+func (lb *lbBalancer) refreshSubConns(backendAddrs []resolver.Address, fromGRPCLBServer bool) bool {
 	opts := balancer.NewSubConnOptions{}
 	if fromGRPCLBServer {
 		opts.CredsBundle = lb.grpclbBackendCreds
 	}
 
 	lb.backendAddrs = nil
-
-	if lb.usePickFirst {
-		var sc balancer.SubConn
-		for _, sc = range lb.subConns {
-			break
-		}
-		if sc != nil {
-			sc.UpdateAddresses(backendAddrs)
-			sc.Connect()
-			return
-		}
-		// This bypasses the cc wrapper with SubConn cache.
-		sc, err := lb.cc.cc.NewSubConn(backendAddrs, opts)
-		if err != nil {
-			grpclog.Warningf("grpclb: failed to create new SubConn: %v", err)
-			return
-		}
-		sc.Connect()
-		lb.subConns[backendAddrs[0]] = sc
-		lb.scStates[sc] = connectivity.Idle
-		return
-	}
-
+	var backendsUpdated bool
 	// addrsSet is the set converted from backendAddrs, it's used to quick
 	// lookup for an address.
 	addrsSet := make(map[resolver.Address]struct{})
@@ -145,10 +115,12 @@ func (lb *lbBalancer) refreshSubConns(backendAddrs []resolver.Address, fromGRPCL
 		lb.backendAddrs = append(lb.backendAddrs, addrWithoutMD)
 
 		if _, ok := lb.subConns[addrWithoutMD]; !ok {
+			backendsUpdated = true
+
 			// Use addrWithMD to create the SubConn.
 			sc, err := lb.cc.NewSubConn([]resolver.Address{addr}, opts)
 			if err != nil {
-				grpclog.Warningf("grpclb: failed to create new SubConn: %v", err)
+				grpclog.Warningf("roundrobinBalancer: failed to create new SubConn: %v", err)
 				continue
 			}
 			lb.subConns[addrWithoutMD] = sc // Use the addr without MD as key for the map.
@@ -164,12 +136,16 @@ func (lb *lbBalancer) refreshSubConns(backendAddrs []resolver.Address, fromGRPCL
 	for a, sc := range lb.subConns {
 		// a was removed by resolver.
 		if _, ok := addrsSet[a]; !ok {
+			backendsUpdated = true
+
 			lb.cc.RemoveSubConn(sc)
 			delete(lb.subConns, a)
 			// Keep the state of this sc in b.scStates until sc's state becomes Shutdown.
 			// The entry will be deleted in HandleSubConnStateChange.
 		}
 	}
+
+	return backendsUpdated
 }
 
 func (lb *lbBalancer) readServerList(s *balanceLoadClientStream) error {
@@ -220,9 +196,6 @@ func (lb *lbBalancer) callRemoteBalancer() (backoff bool, _ error) {
 	if err != nil {
 		return true, fmt.Errorf("grpclb: failed to perform RPC to the remote balancer %v", err)
 	}
-	lb.mu.Lock()
-	lb.remoteBalancerConnected = true
-	lb.mu.Unlock()
 
 	// grpclb handshake on the stream.
 	initReq := &lbpb.LoadBalanceRequest{
@@ -274,17 +247,6 @@ func (lb *lbBalancer) watchRemoteBalancer() {
 		}
 		// Trigger a re-resolve when the stream errors.
 		lb.cc.cc.ResolveNow(resolver.ResolveNowOption{})
-
-		lb.mu.Lock()
-		lb.remoteBalancerConnected = false
-		lb.fullServerList = nil
-		// Enter fallback when connection to remote balancer is lost, and the
-		// aggregated state is not Ready.
-		if !lb.inFallback && lb.state != connectivity.Ready {
-			// Entering fallback.
-			lb.refreshSubConns(lb.resolvedBackendAddrs, false)
-		}
-		lb.mu.Unlock()
 
 		if !doBackoff {
 			retryCount = 0
