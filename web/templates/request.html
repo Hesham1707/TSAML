@@ -1,20 +1,309 @@
 {{define "title"}}Request{{end}}
 
 {{define "body"}}
-<h1>Request</h1>
 
-{{ if .Response }}
-{{ if .Success }}
-<div class="alert alert-success" role="alert">
-    Successful request, transaction ID: {{ .TransactionId }}
-</div>
-{{ else }}
-<div class="alert alert-danger" role="alert">
-    Unable to submit the request, retry later.
-</div>
-{{ end }}
-{{ end }}
+<head>
+    <style>
+        /* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+.tab2 button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
 
+.tab2 {
+  display: none;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+.tab2 button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab2 button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+    </style>
+    
+    <script>
+     function openTab(evt, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks, tab2;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  tab2 = document.getElementsByClassName("tab2");
+  for (i = 0; i < tab2.length; i++) {
+    tab2[i].style.display = "none";
+  }
+
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+function openItem(evt, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks, tab2;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  // Get all elements with class="tablinksitem" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinksItem");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+    </script>
+</head>
+
+<h1>Blockchain Transactions</h1>
+
+
+
+<!-- Tab links -->
+
+
+  <div class="tab">
+    
+
+    <button class="tablinks"><a href="http://34.77.253.102:8080"target="_blank">View Blockchain</a></button>
+    <button class="tablinks" onclick="openTab(event, 'user_transactions')">User Transactions</button>
+    <button class="tablinks" onclick="openTab(event, 'stock_transactions')">Stock Transactions</button>
+    <button class="tablinks" onclick="openTab(event, 'lists')">Admins</button>
+    <!--<button class="tablinks" onclick="openTab(event, 'get_balance')">Add Stocks</button>
+    <button class="tablinks" onclick="openTab(event, 'get_balance')">Remove Stocks</button>-->
+  </div>
+
+  <div class="tab2" id="lists"> 
+
+    
+      <button class="tablinksItem" onclick="openItem(event, 'gettransactions')">User Transactions</button>
+
+      <div class="tablinks">
+    <form class="form-inline" style = "height:0px;" action="request.html" method="post">
+          <input type="hidden" name="submittedlistusers" value="true">
+          <button type="submit" class="tablinksItem">List Users</button>
+      </form></div>
+
+      <!-- List Stocks
+      <div class="tablinks">
+      <form class="form-inline" style = "height:0px;" action="request.html" method="post">
+          <input type="hidden" name="submittedremovestock" value="true">
+          <button type="submit" class="tablinksItem">List Stocks</button>
+      </form></div>
+      -->
+
+      <button class="tablinksItem" onclick="openItem(event, 'checkanamoly')">Check Anamoly</button>
+
+  </div>
+
+  <div class="tab2" id="user_transactions"> 
+
+      <button class="tablinksItem" onclick="openItem(event, 'create_user')">Create User</button>
+      <button class="tablinksItem" onclick="openItem(event, 'get_balance')">Get Balance</button>
+      <button class="tablinksItem" onclick="openItem(event, 'withdraw')">Withdraw</button>
+      <button class="tablinksItem" onclick="openItem(event, 'deposit')">Deposit</button>
+      <button class="tablinksItem" onclick="openItem(event, 'transfer')">Transfer</button>
+
+    
+    </div>
+
+    <div class="tab2" id="stock_transactions"> 
+
+        <button class="tablinksItem" onclick="openItem(event, 'add_stocks')">Add Stocks</button>
+        <button class="tablinksItem" onclick="openItem(event, 'remove_stocks')">Remove Stocks</button>
+        <button class="tablinksItem" onclick="openItem(event, 'buy_stocks')">Buy Stocks</button>
+        <button class="tablinksItem" onclick="openItem(event, 'sell_stocks')">Sell Stocks</button>
+      
+      </div>
+
+
+
+      <div id="checkanamoly" class="tabcontent">
+        <br>
+  <form class="form-inline" action="request.html" method="post">
+      <div class="form-group">
+          <label for="ClientID">Client ID</label>
+          <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+      </div><br>
+      <input type="hidden" name="submittedcheckanamoly" value="true"><br>
+      <button type="submit" class="btn btn-default">check</button>
+  </form>
+  </div>
+
+
+  <div id="gettransactions" class="tabcontent">
+      <br>
+<form class="form-inline" action="request.html" method="post">
+    <div class="form-group">
+        <label for="ClientID">Client ID</label>
+        <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+    </div><br>
+    <input type="hidden" name="submittedgettransactions" value="true"><br>
+    <button type="submit" class="btn btn-default">List Transactions</button>
+</form>
+</div>
+
+
+
+
+      <div id="sell_stocks" class="tabcontent">
+        <br>
+  <form class="form-inline" action="request.html" method="post">
+      <div class="form-group">
+          <label for="StockName">Stock Name</label>
+          <input type="text" class="form-control" id="StockName" placeholder="name" name="StockName">
+      </div><br>
+      <div class="form-group">
+          <label for="SharesNumber">Number of shares</label>
+          <input type="text" class="form-control" id="SharesNumber" placeholder="number" name="SharesNumber">
+      </div><br>
+      <div class="form-group">
+          <label for="OwnerID">Client ID</label>
+          <input type="text" class="form-control" id="OwnerID" placeholder="id" name="OwnerID">
+      </div><br>
+      <div class="form-group">
+          <label for="Price">Price per Share</label>
+          <input type="text" class="form-control" id="Price" placeholder="$$" name="Price">
+      </div><br>
+      <input type="hidden" name="submittedsellstock" value="true"><br>
+      <button type="submit" class="btn btn-default">sell stocks</button>
+  </form>
+  </div>
+
+      <div id="buy_stocks" class="tabcontent">
+          <br>
+    <form class="form-inline" action="request.html" method="post">
+        <div class="form-group">
+            <label for="StockName">Stock Name</label>
+            <input type="text" class="form-control" id="StockName" placeholder="name" name="StockName">
+        </div><br>
+        <div class="form-group">
+            <label for="SharesNumber">Number of shares</label>
+            <input type="text" class="form-control" id="SharesNumber" placeholder="number" name="SharesNumber">
+        </div><br>
+        <div class="form-group">
+            <label for="OwnerID">Client ID</label>
+            <input type="text" class="form-control" id="OwnerID" placeholder="id" name="OwnerID">
+        </div><br>
+        <div class="form-group">
+            <label for="Price">Price per Share</label>
+            <input type="text" class="form-control" id="Price" placeholder="$$" name="Price">
+        </div><br>
+        <input type="hidden" name="submittedbuystock" value="true"><br>
+        <button type="submit" class="btn btn-default">buy stocks</button>
+    </form>
+    </div>
+
+
+      <div id="remove_stocks" class="tabcontent">
+          <br>
+    <form class="form-inline" action="request.html" method="post">
+        <div class="form-group">
+            <label for="StockName">Stock Name</label>
+            <input type="text" class="form-control" id="StockName" placeholder="name" name="StockName">
+        </div><br>
+        <div class="form-group">
+            <label for="OwnerID">Owner Client ID</label>
+            <input type="text" class="form-control" id="OwnerID" placeholder="id" name="OwnerID">
+        </div><br>
+        <input type="hidden" name="submittedremovestock" value="true"><br>
+        <button type="submit" class="btn btn-default">remove stocks</button>
+    </form>
+    </div>
+
+
+
+
+      <div id="add_stocks" class="tabcontent">
+          <br>
+    <form class="form-inline" action="request.html" method="post">
+        <div class="form-group">
+            <label for="StockName">Stock Name</label>
+            <input type="text" class="form-control" id="StockName" placeholder="name" name="StockName">
+        </div><br>
+        <div class="form-group">
+            <label for="SharesNumber">Number of shares</label>
+            <input type="text" class="form-control" id="SharesNumber" placeholder="number" name="SharesNumber">
+        </div><br>
+        <div class="form-group">
+            <label for="OwnerID">Owner Client ID</label>
+            <input type="text" class="form-control" id="OwnerID" placeholder="id" name="OwnerID">
+        </div><br>
+        <div class="form-group">
+            <label for="Price">Price per Share</label>
+            <input type="text" class="form-control" id="Price" placeholder="$$" name="Price">
+        </div><br>
+        <input type="hidden" name="submittedaddstock" value="true"><br>
+        <button type="submit" class="btn btn-default">add stocks</button>
+    </form>
+    </div>
+
+
+    
+    
+  <div id="create_user" class="tabcontent">
+      <br>
 <form class="form-inline" action="request.html" method="post">
     <div class="form-group">
         <label for="ClientName">Client Name</label>
@@ -29,7 +318,105 @@
         <input type="text" class="form-control" id="ClientBalance" placeholder="balance" name="ClientBalance">
     </div><br>
     <input type="hidden" name="submitted" value="true"><br>
-    <button type="submit" class="btn btn-default">Send the request</button>
+    <button type="submit" class="btn btn-default">create user</button>
 </form>
+</div>
+<div id="get_balance" class="tabcontent">
+        <br>
+  <form class="form-inline" action="request.html" method="post">
+      <div class="form-group">
+          <label for="ClientID">Client ID</label>
+          <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+      </div>
+      <br>
+      <br>
+      <input type="hidden" name="submittedgetbalance" value="true">
+      <button type="submit" class="btn btn-default">get balance</button>
+  </form>
+</div>
+
+<div id="transfer" class="tabcontent">
+    <br>
+<form class="form-inline" action="request.html" method="post">
+  <div class="form-group">
+      <label for="SClientID">Source Client ID</label>
+      <input type="text" class="form-control" id="SClientID" placeholder="source id" name="SClientID">
+  </div>
+  <br>
+
+  <div class="form-group">
+      <label for="TClientID">Target Client ID</label>
+      <input type="text" class="form-control" id="TClientID" placeholder="destination id" name="TClientID"></div>
+  <br>
+  <div class="form-group">
+      <label for="Amount">Amount</label>
+      <input type="text" class="form-control" id="Amount" placeholder="$$" name="Amount">
+  </div>
+  <br>
+  <br>
+  <input type="hidden" name="submittedtransfer" value="true">
+  <button type="submit" class="btn btn-default">transfer</button>
+</form>
+</div>
+
+
+
+ <div id="withdraw" class="tabcontent">
+    <br>
+<form class="form-inline" action="request.html" method="post">
+  <div class="form-group">
+      <label for="ClientID">Client ID</label>
+      <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="Amount">Amount</label>
+    <input type="text" class="form-control" id="Amount" placeholder="$$" name="Amount">
+</div>
+  <br>
+  <br>
+  <input type="hidden" name="submittedwithdraw" value="true">
+  <button type="submit" class="btn btn-default">withdraw</button>
+</form>
+
+  </div>
+  <div id="deposit" class="tabcontent">
+    <br>
+<form class="form-inline" action="request.html" method="post">
+  <div class="form-group">
+      <label for="ClientID">Client ID</label>
+      <input type="text" class="form-control" id="ClientID" placeholder="id" name="ClientID">
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="Amount">Amount</label>
+    <input type="text" class="form-control" id="Amount" placeholder="$$" name="Amount">
+</div>
+  <br>
+  <br>
+  <input type="hidden" name="submitteddeposit" value="true">
+  <button type="submit" class="btn btn-default">deposit</button>
+</form>
+</div>
+
+
+{{ if .Response }}
+{{ if .Success }}
+<br>
+<div class="alert alert-success tab2" style="white-space: pre-line; display:block;" role="alert">
+    {{ .TransactionId }}
+
+</div>
+
+{{ else }}
+<div class="alert alert-danger" role="alert">
+    Unable to submit the request, retry later.
+</div>
+{{ end }}
+
+
+{{ end }}
+
+
 
 {{end}}

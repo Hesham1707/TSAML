@@ -11,7 +11,7 @@ import (
 func main() {
 	// Definition of the Fabric SDK properties
 	fSetup := blockchain.FabricSetup{
-		// Network parameters 
+		// Network parameters  
 		OrdererID: "orderer.example.com",
 
 		// Channel parameters
@@ -47,7 +47,9 @@ func main() {
 		app := &controllers.Application{
 			Fabric: &fSetup,
 		}
+		//fSetup.GenerateClients()
 		web.Serve(app)
 	// Close SDK
+	
 	defer fSetup.CloseSDK()	
 }

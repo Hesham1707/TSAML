@@ -72,5 +72,5 @@ func (setup *FabricSetup) InvokeHello(fname string , args []string) (string, err
 		return "", fmt.Errorf("did NOT receive CC event for eventId(%s)", eventID)
 	}*/
 
-	return string(response.TransactionID), nil
+	return string(response.Payload), nil
 }
